@@ -5,6 +5,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var showingWeatherView: Bool = false
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -16,7 +17,7 @@ struct ContentView: View {
                             .foregroundStyle(.white)
                         Spacer()
                         Button {
-                            
+
                         } label: {
                             Image(systemName: "sensor")
                                 .renderingMode(.original)
@@ -34,10 +35,17 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: proxy.size.width * 0.2)
 
-                    weatherView(proxy: proxy)
+                    Button {
+                        showingWeatherView = true
+                    } label: {
+                        weatherWidgetView(proxy: proxy)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: proxy.safeAreaInsets.bottom, alignment: .top)
                 .padding()
+                .sheet(isPresented: $showingWeatherView) {
+                    WeatherView()
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
@@ -45,7 +53,7 @@ struct ContentView: View {
     }
 
     @ViewBuilder
-    private func weatherView(proxy: GeometryProxy) -> some View {
+    private func weatherWidgetView(proxy: GeometryProxy) -> some View {
         HStack {
             Image(systemName: "cloud.sun.fill")
                 .renderingMode(.original)
