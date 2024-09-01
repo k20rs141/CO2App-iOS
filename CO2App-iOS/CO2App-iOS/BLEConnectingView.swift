@@ -22,12 +22,14 @@ struct BLEConnectingView: View {
     var screenSize: CGSize
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack {
             switch connectionStatus {
             case .idle, .loading, .failure:
                 ConnectingView(screenSize: screenSize)
-                    .onAppear {
-                        HapticsManager.shared.feedback(type: .failure)
+                    .onChange(of: connectionStatus) {
+                        if connectionStatus == .failure {
+                            HapticsManager.shared.feedback(type: .error)
+                        }
                     }
             case .success:
                 ConnectedView(screenSize: screenSize)
@@ -39,6 +41,7 @@ struct BLEConnectingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             LinearGradient(colors: [Color("blue"), Color("blue 1"), Color("blue 2"), Color("blue 3")], startPoint: .topLeading, endPoint: .bottomTrailing)
+            
         )
         .ignoresSafeArea()
         .onAppear {
@@ -78,36 +81,39 @@ struct BLEConnectingView: View {
                 .foregroundStyle(Color("blue 2"))
             
         }
-        .padding(.bottom, 32)
-        if connectionStatus == .loading {
-            HStack {
-                LoadingAnimation(color: .white)
-                Text("検索中...")
-                    .foregroundStyle(.white)
-                    .font(.title2)
-                    .fontWeight(.bold)
+        VStack {
+            if connectionStatus == .idle || connectionStatus == .loading {
+                HStack {
+                    LoadingAnimation(color: .white)
+                    Text("検索中...")
+                        .foregroundStyle(.white)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                }
+                Text("しばらくお待ち下さい")
+                    .foregroundStyle(.secondary)
+                    .font(.callout)
             }
-            Text("しばらくお待ち下さい")
-                .foregroundStyle(.secondary)
-                .font(.callout)
-        }
-        if connectionStatus == .failure {
-            Label("接続できませんでした!", systemImage: "exclamationmark.circle.fill")
-                .symbolRenderingMode(.multicolor)
-                .foregroundStyle(.red)
-                .font(.callout)
-            Button {
-                
-            } label: {
-                Text("再接続")
-                    .frame(width: screenSize.width * 0.4, height: 52)
-                    .foregroundStyle(.white)
-                    .fontWeight(.bold)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Capsule())
+            if connectionStatus == .failure {
+                Label("接続できませんでした!", systemImage: "exclamationmark.circle.fill")
+                    .symbolRenderingMode(.multicolor)
+                    .foregroundStyle(.red)
+                    .font(.callout)
+                Button {
+                    connectionStatus = .success
+                } label: {
+                    Text("再接続")
+                        .frame(width: screenSize.width * 0.4, height: 52)
+                        .foregroundStyle(.white)
+                        .fontWeight(.bold)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                }
             }
-            .offset(y: screenSize.height * 0.3)
         }
+        .frame(maxWidth: .infinity)
+        .frame(height: screenSize.height * 0.15)
+        .offset(y: screenSize.height * 0.25)
     }
 
     @ViewBuilder
