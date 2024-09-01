@@ -16,7 +16,7 @@ final class WeatherModel: NSObject, CLLocationManagerDelegate {
     var errorMessage: String = ""
 
     private let locationManager = CLLocationManager()
-    private var userLocation: CLLocation? = CLLocation(latitude: 35.6894, longitude: 139.692) // 東京都
+    private var userLocation: CLLocation = CLLocation(latitude: 35.6894, longitude: 139.692) // 東京都
 
     override init() {
         super.init()
@@ -26,13 +26,11 @@ final class WeatherModel: NSObject, CLLocationManagerDelegate {
     }
 
     func updateWeather() {
-        guard let userLocation = self.userLocation else { return }
         Task.detached(priority: .background) {
             do {
-                let weather = try await WeatherService.shared.weather(for: userLocation)
+                let weather = try await WeatherService.shared.weather(for: self.userLocation)
                 Task { @MainActor in
                     self.weather = weather
-                    print("weather: \(String(describing: self.weather))")
                 }
             } catch {
                 Task { @MainActor in
@@ -64,10 +62,10 @@ final class WeatherModel: NSObject, CLLocationManagerDelegate {
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        reverseGeocoding(location: location)
-        Task { @MainActor in
-            userLocation = location
-        }
+            reverseGeocoding(location: location)
+            Task { @MainActor in
+                userLocation = location
+            }
     }
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -81,6 +79,9 @@ final class WeatherModel: NSObject, CLLocationManagerDelegate {
         // ユーザーが設定から位置情報を許可してない場合
         case .denied:
             manager.requestWhenInUseAuthorization()
+            Task { @MainActor in
+                reverseGeocoding(location: userLocation)
+            }
         // ユーザーが位置情報を許可している場合
         case .authorizedAlways, .authorizedWhenInUse:
             manager.requestLocation()
@@ -89,6 +90,6 @@ final class WeatherModel: NSObject, CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-
+        print(error.localizedDescription)
     }
 }
