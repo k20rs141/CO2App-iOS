@@ -125,7 +125,7 @@ struct BLEConnectingView: View {
                 .background(.thinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             Text("SSID")
-            TextField("", text: $ssid)
+            SecureField("", text: $ssid)
                 .padding()
                 .background(.thinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
