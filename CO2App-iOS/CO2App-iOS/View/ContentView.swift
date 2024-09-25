@@ -122,9 +122,22 @@ struct ContentView: View {
     private func co2CardView(screenSize: CGSize) -> some View {
         HStack {
             VStack {
-                Label("今日のCO2", systemImage: "")
+                HStack {
+                    Circle()
+                        .fill()
+                        .frame(width: 16, height: 16)
+                    Text("今日のCO2")
+                }
+                Text("最終更新日")
+                HStack {
+                    VStack {
+                        Text("25")
+                        
+                    }
+                }
             }
         }
+        .padding()
         .modifyCardView(backgroundColor: .backgroundSecondary, cornerRadius: 16)
     }
 }
